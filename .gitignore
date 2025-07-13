@@ -1,0 +1,15 @@
+# Ignore compiled files
+*.o
+*.exe
+
+# Ignore temporary files
+*.tmp
+*.bak
+
+# Ignore editor files
+.vscode/
+*.swp
+*.pui
+*.prj
+*.pui
+*.prj
