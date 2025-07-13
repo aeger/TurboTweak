@@ -1,14 +1,14 @@
 # Add-TakeOwnership.ps1
 # Adds "Take Ownership" right-click context menu entries for files, directories, and drives.
 # Improved: Uses \shell\runas for consistent elevation, hardcoded /d y (English), error handling, confirmation, logging.
-# New: Enables SeTakeOwnershipPrivilege to handle protected keys; uses HKCR PSDrive; optional Explorer restart.
+# New: Checks/mounts HKCR PSDrive if needed; better privilege enable fallback; verbose logging; no session-terminating returns.
 
 . "$PSScriptRoot\Lib-BackupRegistry.ps1"  # Assume improved lib with fallback path
 
 # Elevation check (for standalone run)
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Start-Process pwsh.exe "-File `"$PSCommandPath`"" -Verb RunAs
-    return  # Use return instead of exit to avoid terminating caller
+    return  # Return to allow menu continuation
 }
 
 # Function to enable privilege (required for taking ownership of protected keys)
@@ -18,15 +18,14 @@ function Enable-Privilege {
     )
     try {
         $import = '[DllImport("ntdll.dll")] public static extern int RtlAdjustPrivilege(ulong p, bool e, bool c, ref bool o);'
-        $type = Add-Type -MemberDefinition $import -Namespace "NtDll" -Name "Priv" -PassThru
+        $type = Add-Type -MemberDefinition $import -Namespace "NtDll" -Name "Priv" -PassThru -ErrorAction Stop
         $old = $false
         [void]$type::RtlAdjustPrivilege(9, $true, $false, [ref]$old)  # 9 = SeTakeOwnershipPrivilege
         Write-Host "🔑 $Privilege enabled." -ForegroundColor Cyan
         Add-Content $logPath -Value "$(Get-Date): Enabled $Privilege"
     } catch {
-        Write-Host "⚠️ Failed to enable $Privilege: $_" -ForegroundColor Red
-        Add-Content $logPath -Value "$(Get-Date): Privilege enable error: $_"
-        return
+        Write-Host "⚠️ Failed to enable $Privilege: $_ (continuing without—may cause access errors)." -ForegroundColor Yellow
+        Add-Content $logPath -Value "$(Get-Date): Privilege enable warning: $_"
     }
 }
 
@@ -53,9 +52,9 @@ function Set-RegistryPermissions {
 
         return $originalAcl
     } catch {
-        Write-Host "⚠️ Failed to set permissions for $path: $_" -ForegroundColor Red
-        Add-Content $logPath -Value "$(Get-Date): Permissions error for $path: $_"
-        return
+        Write-Host "⚠️ Failed to set permissions for $path: $_ (skipping this key)." -ForegroundColor Yellow
+        Add-Content $logPath -Value "$(Get-Date): Permissions warning for $path: $_"
+        return $null
     }
 }
 
@@ -66,6 +65,18 @@ if ($confirm -ne 'y') { Write-Host "❌ Operation cancelled." -ForegroundColor Y
 # Logging setup
 $logPath = "$PSScriptRoot\TurboTweak.log"
 Add-Content -Path $logPath -Value "$(Get-Date): Starting Add-TakeOwnership"
+
+# Mount HKCR PSDrive if not present
+if (-not (Test-Path HKCR:)) {
+    try {
+        New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -ErrorAction Stop | Out-Null
+        Write-Host "📁 Mounted HKCR PSDrive." -ForegroundColor Cyan
+        Add-Content $logPath -Value "$(Get-Date): Mounted HKCR PSDrive"
+    } catch {
+        Write-Host "⚠️ Failed to mount HKCR PSDrive: $_ (script may fail)." -ForegroundColor Red
+        Add-Content $logPath -Value "$(Get-Date): PSDrive mount error: $_"
+    }
+}
 
 # Enable privilege
 Enable-Privilege
@@ -79,7 +90,7 @@ $keys = @(
     "HKCR:\Drive\shell\runas\command"
 )
 
-# Parent paths for permissions (using HKCR PSDrive)
+# Parent paths for permissions
 $parentPaths = @(
     "HKCR:\*",
     "HKCR:\Directory\shell",
@@ -97,9 +108,8 @@ try {
     Backup-Registry $keys "TakeOwnership"
     Add-Content $logPath -Value "$(Get-Date): Backup completed"
 } catch {
-    Write-Host "⚠️ Backup failed: $_" -ForegroundColor Red
-    Add-Content $logPath -Value "$(Get-Date): Backup error: $_"
-    return
+    Write-Host "⚠️ Backup failed: $_ (continuing anyway)." -ForegroundColor Yellow
+    Add-Content $logPath -Value "$(Get-Date): Backup warning: $_"
 }
 
 # Commands (direct cmd, elevated via runas key)
@@ -116,8 +126,8 @@ try {
     Write-Host "✅ Added for files." -ForegroundColor Green
     Add-Content $logPath -Value "$(Get-Date): Added for files"
 } catch {
-    Write-Host "Error adding for files: $_" -ForegroundColor Red
-    Add-Content $logPath -Value "$(Get-Date): Error for files: $_"
+    Write-Host "Warning adding for files: $_ (skipping)." -ForegroundColor Yellow
+    Add-Content $logPath -Value "$(Get-Date): Warning for files: $_"
 }
 
 # Apply for directories
@@ -129,8 +139,8 @@ try {
     Write-Host "✅ Added for directories." -ForegroundColor Green
     Add-Content $logPath -Value "$(Get-Date): Added for directories"
 } catch {
-    Write-Host "Error adding for directories: $_" -ForegroundColor Red
-    Add-Content $logPath -Value "$(Get-Date): Error for directories: $_"
+    Write-Host "Warning adding for directories: $_ (skipping)." -ForegroundColor Yellow
+    Add-Content $logPath -Value "$(Get-Date): Warning for directories: $_"
 }
 
 # Apply for drives
@@ -142,11 +152,11 @@ try {
     Write-Host "✅ Added for drives." -ForegroundColor Green
     Add-Content $logPath -Value "$(Get-Date): Added for drives"
 } catch {
-    Write-Host "Error adding for drives: $_" -ForegroundColor Red
-    Add-Content $logPath -Value "$(Get-Date): Error for drives: $_"
+    Write-Host "Warning adding for drives: $_ (skipping)." -ForegroundColor Yellow
+    Add-Content $logPath -Value "$(Get-Date): Warning for drives: $_"
 }
 
-Write-Host "✅ 'Take Ownership' context menu added. Log at $logPath" -ForegroundColor Green
+Write-Host "✅ 'Take Ownership' context menu added (or partially). Log at $logPath" -ForegroundColor Green
 Add-Content $logPath -Value "$(Get-Date): Completed Add-TakeOwnership"
 
 # Optional Explorer restart
@@ -161,11 +171,3 @@ if ($restartConfirm -eq 'y') {
         Add-Content $logPath -Value "$(Get-Date): Explorer restart error: $_"
     }
 }
-
-# Optional: Restore original permissions (uncomment if needed for cleanup)
-# foreach ($parent in $parentPaths) {
-#     if ($originalAcls[$parent]) {
-#         $key = Get-Item -LiteralPath $parent
-#         $key.SetAccessControl($originalAcls[$parent])
-#     }
-# }
