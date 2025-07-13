@@ -1,0 +1,11 @@
+07/13/2025 14:34:44: Starting Remove-TakeOwnership
+07/13/2025 14:34:44: Backup completed
+07/13/2025 14:36:39: Removal error: Requested registry access is not allowed.
+07/13/2025 14:36:39: Completed Remove-TakeOwnership
+07/13/2025 14:37:38: Explorer restarted
+07/13/2025 14:38:12: Starting Add-TakeOwnership
+07/13/2025 14:38:12: Backup completed
+07/13/2025 14:42:32: Added for files
+07/13/2025 14:42:32: Added for directories
+07/13/2025 14:42:33: Added for drives
+07/13/2025 14:42:33: Completed Add-TakeOwnership

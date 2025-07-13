@@ -1,5 +1,5 @@
-# Add-VerboseBoot.ps1
-# Enables detailed boot/shutdown status messages
+# Remove-RegistryBackup.ps1
+# Disables built-in registry backup engine
 
 . "$PSScriptRoot\Lib-BackupRegistry.ps1"
 
@@ -8,17 +8,17 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-$confirm = Read-Host "Enable verbose boot messages? (y/n)"
+$confirm = Read-Host "Disable registry backup service? (y/n)"
 if ($confirm -ne 'y') { Write-Host "❌ Cancelled." -ForegroundColor Yellow; exit }
 
 $logPath = "$PSScriptRoot\TurboTweak.log"
-Add-Content -Path $logPath -Value "$(Get-Date): Starting Add-VerboseBoot"
+Add-Content -Path $logPath -Value "$(Get-Date): Starting Remove-RegistryBackup"
 
-$key = "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+$key = "HKLM\System\CurrentControlSet\Control\Session Manager\Configuration Manager"
 $keys = @($key)
 
 try {
-    Backup-Registry $keys "VerboseBoot"
+    Backup-Registry $keys "RegistryBackup_Remove"
     Add-Content $logPath -Value "$(Get-Date): Backup completed"
 } catch {
     Write-Host "⚠️ Backup failed: $_" -ForegroundColor Red
@@ -27,13 +27,12 @@ try {
 }
 
 try {
-    New-Item -Path $key -Force | Out-Null
-    Set-ItemProperty -Path $key -Name "verbosestatus" -Value 1 -Type DWord
-    Write-Host "🧠 Enabled. Detailed info on startup/shutdown." -ForegroundColor Cyan
-    Add-Content $logPath -Value "$(Get-Date): Applied successfully"
+    Set-ItemProperty -Path $key -Name "EnablePeriodicBackup" -Value 0 -Type DWord
+    Write-Host "🚫 Registry backup disabled." -ForegroundColor Yellow
+    Add-Content $logPath -Value "$(Get-Date): Disabled successfully"
 } catch {
     Write-Host "Error: $_" -ForegroundColor Red
     Add-Content $logPath -Value "$(Get-Date): Error: $_"
 }
 
-Add-Content $logPath -Value "$(Get-Date): Completed Add-VerboseBoot"
+Add-Content $logPath -Value "$(Get-Date): Completed Remove-RegistryBackup"
