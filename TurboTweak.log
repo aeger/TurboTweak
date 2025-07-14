@@ -9,3 +9,11 @@
 07/13/2025 14:42:32: Added for directories
 07/13/2025 14:42:33: Added for drives
 07/13/2025 14:42:33: Completed Add-TakeOwnership
+07/13/2025 18:54:44: Starting Add-RecentFolders
+07/13/2025 18:54:44: Backup completed
+07/13/2025 18:54:44: Error: A parameter cannot be found that matches parameter name 'Type'.
+07/13/2025 18:54:44: Completed Add-RecentFolders
+07/13/2025 19:03:48: Starting Add-RecentFolders
+07/13/2025 19:03:48: Backup completed
+07/13/2025 19:03:48: Applied successfully
+07/13/2025 19:04:00: Completed Add-RecentFolders
