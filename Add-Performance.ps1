@@ -6,11 +6,11 @@
 # Elevation check
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Start-Process pwsh.exe "-File `"$PSCommandPath`"" -Verb RunAs
-    exit
+    return
 }
 
 $confirm = Read-Host "Apply performance tweaks? Reboot recommended after (y/n)"
-if ($confirm -ne 'y') { Write-Host "❌ Cancelled." -ForegroundColor Yellow; exit }
+if ($confirm -ne 'y') { Write-Host "❌ Cancelled." -ForegroundColor Yellow; return }
 
 $logPath = "$PSScriptRoot\TurboTweak.log"
 Add-Content -Path $logPath -Value "$(Get-Date): Starting Add-Performance"
@@ -26,7 +26,7 @@ try {
 } catch {
     Write-Host "⚠️ Backup failed: $_" -ForegroundColor Red
     Add-Content $logPath -Value "$(Get-Date): Backup error: $_"
-    exit
+    return  # Changed from exit for graceful return to menu
 }
 
 try {

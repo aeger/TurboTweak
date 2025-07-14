@@ -1,6 +1,6 @@
 # Add-TakeOwnership.ps1
 # Adds "Take Ownership" right-click context menu entries for files, directories, and drives.
-# Simplified: Uses reg add for permission-bypassing creation, no DllImport, warnings on failure, returns to menu.
+# Updated: Uses custom \shell\TakeOwnership to avoid conflicting with built-in RunAs verb; best practice for shell tweaks.
 
 . "$PSScriptRoot\Lib-BackupRegistry.ps1"
 
@@ -19,12 +19,12 @@ $logPath = "$PSScriptRoot\TurboTweak.log"
 Add-Content -Path $logPath -Value "$(Get-Date): Starting Add-TakeOwnership"
 
 $keys = @(
-    "HKEY_CLASSES_ROOT\*\shell\runas",
-    "HKEY_CLASSES_ROOT\*\shell\runas\command",
-    "HKEY_CLASSES_ROOT\Directory\shell\runas",
-    "HKEY_CLASSES_ROOT\Directory\shell\runas\command",
-    "HKEY_CLASSES_ROOT\Drive\shell\runas",
-    "HKEY_CLASSES_ROOT\Drive\shell\runas\command"
+    "HKEY_CLASSES_ROOT\*\shell\TakeOwnership",
+    "HKEY_CLASSES_ROOT\*\shell\TakeOwnership\command",
+    "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership",
+    "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership\command",
+    "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership",
+    "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership\command"
 )
 
 # Backup
@@ -36,18 +36,19 @@ try {
     Add-Content $logPath -Value "$(Get-Date): Backup warning: $_"
 }
 
-# Commands
-$cmd_file = 'cmd.exe /c takeown /f "%1" && icacls "%1" /grant *S-1-3-4:F /t /c /l'
-$cmd_dir = 'cmd.exe /c takeown /f "%1" /r /d y && icacls "%1" /grant *S-1-3-4:F /t /c /q'
-$cmd_drive = 'cmd.exe /c takeown /f "%1" /r /d y && icacls "%1" /grant *S-1-3-4:F /t /c'
+# Commands (requires manual UAC on use, but no conflict)
+$cmd_file = 'cmd.exe /k takeown /f "%1" && icacls "%1" /grant *S-1-3-4:F /t /c /l && pause'
+$cmd_dir = 'cmd.exe /k takeown /f "%1" /r /d y && icacls "%1" /grant *S-1-3-4:F /t /c /q && pause'
+$cmd_drive = 'cmd.exe /k takeown /f "%1" /r /d y && icacls "%1" /grant *S-1-3-4:F /t /c && pause'
 
-# Apply using reg add to avoid permission issues
+# Apply using reg add
 try {
-    # For files
-    reg add "HKEY_CLASSES_ROOT\*\shell\runas" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\*\shell\runas" /ve /d "Take Ownership" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\*\shell\runas\command" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\*\shell\runas\command" /ve /d $cmd_file /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\*\shell\TakeOwnership" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\*\shell\TakeOwnership" /ve /d "Take Ownership" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\*\shell\TakeOwnership" /v "NoWorkingDirectory" /d "" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\*\shell\TakeOwnership" /v "Extended" /d "" /f | Out-Null  # Optional: Shift+Right-click only
+    reg add "HKEY_CLASSES_ROOT\*\shell\TakeOwnership\command" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\*\shell\TakeOwnership\command" /ve /d $cmd_file /f | Out-Null
     Write-Host "✅ Added for files." -ForegroundColor Green
     Add-Content $logPath -Value "$(Get-Date): Added for files"
 } catch {
@@ -56,11 +57,12 @@ try {
 }
 
 try {
-    # For directories
-    reg add "HKEY_CLASSES_ROOT\Directory\shell\runas" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\Directory\shell\runas" /ve /d "Take Ownership" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\Directory\shell\runas\command" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\Directory\shell\runas\command" /ve /d $cmd_dir /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership" /ve /d "Take Ownership" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership" /v "NoWorkingDirectory" /d "" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership" /v "Extended" /d "" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership\command" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Directory\shell\TakeOwnership\command" /ve /d $cmd_dir /f | Out-Null
     Write-Host "✅ Added for directories." -ForegroundColor Green
     Add-Content $logPath -Value "$(Get-Date): Added for directories"
 } catch {
@@ -69,11 +71,12 @@ try {
 }
 
 try {
-    # For drives
-    reg add "HKEY_CLASSES_ROOT\Drive\shell\runas" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\Drive\shell\runas" /ve /d "Take Ownership" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\Drive\shell\runas\command" /f | Out-Null
-    reg add "HKEY_CLASSES_ROOT\Drive\shell\runas\command" /ve /d $cmd_drive /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership" /ve /d "Take Ownership" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership" /v "NoWorkingDirectory" /d "" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership" /v "Extended" /d "" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership\command" /f | Out-Null
+    reg add "HKEY_CLASSES_ROOT\Drive\shell\TakeOwnership\command" /ve /d $cmd_drive /f | Out-Null
     Write-Host "✅ Added for drives." -ForegroundColor Green
     Add-Content $logPath -Value "$(Get-Date): Added for drives"
 } catch {
@@ -81,7 +84,7 @@ try {
     Add-Content $logPath -Value "$(Get-Date): Warning for drives: $_"
 }
 
-Write-Host "✅ 'Take Ownership' context menu added (or partially). Log at $logPath" -ForegroundColor Green
+Write-Host "✅ 'Take Ownership' context menu added. Log at $logPath" -ForegroundColor Green
 Add-Content $logPath -Value "$(Get-Date): Completed Add-TakeOwnership"
 
 # Optional Explorer restart

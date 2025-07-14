@@ -29,7 +29,7 @@ try {
 } catch {
     Write-Host "⚠️ Backup failed: $_" -ForegroundColor Red
     Add-Content $logPath -Value "$(Get-Date): Backup error: $_"
-    exit
+    return  # Changed from exit
 }
 
 try {
