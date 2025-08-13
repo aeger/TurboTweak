@@ -97,7 +97,7 @@ Create a shortcut to Launch-TurboTweak.bat:
 
 ## Warnings and Risks
 - **Registry Edits**: Can cause system instability if misapplied—always create a restore point first.
-- **Backups**: Scripts back up keys automatically; check log if empty (normal if keys don't exist).
+- **Backups**: Scripts back up keys automatically; check the log if empty (normal if keys don't exist).
 - **Elevation**: Some tweaks require admin; scripts relaunch if needed.
 - **Reversal**: Use remove options to undo; test in VM if possible.
 - **Compatibility**: Win11 only; may break with updates—verify on your build.
