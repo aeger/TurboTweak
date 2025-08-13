@@ -93,6 +93,7 @@ Create a shortcut to Launch-TurboTweak.bat:
 
 ### Performance Tweaks
 - Sets StartupDelayInMSec=0, SystemResponsiveness=10.
+- Sets NetworkThrottlingIndex=0xffffffff for improved network performance.
 - Reboot; notice faster app starts and better foreground priority.
 
 ## Warnings and Risks
