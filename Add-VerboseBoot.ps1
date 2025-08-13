@@ -14,7 +14,7 @@ if ($confirm -ne 'y') { Write-Host "❌ Cancelled." -ForegroundColor Yellow; exi
 $logPath = "$PSScriptRoot\TurboTweak.log"
 Add-Content -Path $logPath -Value "$(Get-Date): Starting Add-VerboseBoot"
 
-$key = "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+$key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
 $keys = @($key)
 
 try {

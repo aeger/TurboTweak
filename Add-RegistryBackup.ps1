@@ -3,7 +3,7 @@
 
 . "$PSScriptRoot\Lib-BackupRegistry.ps1"
 
-$key = "HKLM\System\CurrentControlSet\Control\Session Manager\Configuration Manager"
+$key = "HKLM:\System\CurrentControlSet\Control\Session Manager\Configuration Manager"
 Backup-Registry @($key) "RegistryBackup"
 
 New-Item -Path $key -Force | Out-Null
