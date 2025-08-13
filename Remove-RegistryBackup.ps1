@@ -14,7 +14,7 @@ if ($confirm -ne 'y') { Write-Host "❌ Cancelled." -ForegroundColor Yellow; exi
 $logPath = "$PSScriptRoot\TurboTweak.log"
 Add-Content -Path $logPath -Value "$(Get-Date): Starting Remove-RegistryBackup"
 
-$key = "HKLM\System\CurrentControlSet\Control\Session Manager\Configuration Manager"
+$key = "HKLM:\System\CurrentControlSet\Control\Session Manager\Configuration Manager"
 $keys = @($key)
 
 try {

@@ -16,8 +16,8 @@ $logPath = "$PSScriptRoot\TurboTweak.log"
 Add-Content -Path $logPath -Value "$(Get-Date): Starting Add-Performance"
 
 $keys = @(
-    "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Serialize",
-    "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile"
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Serialize",
+    "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile"
 )
 
 try {

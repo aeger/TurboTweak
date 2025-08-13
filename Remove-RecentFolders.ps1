@@ -15,10 +15,10 @@ $logPath = "$PSScriptRoot\TurboTweak.log"
 Add-Content -Path $logPath -Value "$(Get-Date): Starting Remove-RecentFolders"
 
 $keys = @(
-    "HKCU\SOFTWARE\Classes\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}",
-    "HKCU\SOFTWARE\Classes\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}\ShellFolder",
-    "HKCU\SOFTWARE\Classes\Wow6432Node\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}",
-    "HKCU\SOFTWARE\Classes\Wow6432Node\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}\ShellFolder"
+    "HKCU:\SOFTWARE\Classes\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}",
+    "HKCU:\SOFTWARE\Classes\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}\ShellFolder",
+    "HKCU:\SOFTWARE\Classes\Wow6432Node\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}",
+    "HKCU:\SOFTWARE\Classes\Wow6432Node\CLSID\{22877a6d-37a1-461a-91b0-dbda5aaebc99}\ShellFolder"
 )
 
 try {
