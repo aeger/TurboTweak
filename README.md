@@ -48,22 +48,54 @@ powershell.exe -ExecutionPolicy Bypass -File "%~dp0TurboTweakMenu.ps1"
 ### Via Menu (Recommended)
 Run `Launch-TurboTweak.bat` as admin. The menu appears:
 
-============= TurboTweak Launcher ============= 
-[1] Add Take Ownership 
-[2] Remove Take Ownership 
-[3] Add Recent Folders 
-[4] Remove Recent Folders 
-[5] Enable Verbose Boot Messages 
-[6] Disable Verbose Boot Messages 
-[7] Apply Performance Tweaks 
-[8] Remove Performance Tweaks 
-[9] Enable Registry Backup 
-[10] Disable Registry Backup 
-[11] Apply All Tweaks 
-[12] Remove All Tweaks 
+============= TurboTweak Launcher =============
+[1] Add Take Ownership
+[2] Remove Take Ownership
+[3] Add Recent Folders
+[4] Remove Recent Folders
+[5] Enable Verbose Boot Messages
+[6] Disable Verbose Boot Messages
+[7] Apply Performance Tweaks
+[8] Remove Performance Tweaks
+[9] Enable Registry Backup
+[10] Disable Registry Backup
+[11] Apply All Tweaks
+[12] Remove All Tweaks
 [0] Exit
 
 Select an option (e.g., 3 for Recent Folders), confirm prompts, and follow on-screen instructions (e.g., reboot if needed).
+
+### Python edition
+The repository also ships with a Python port of the PowerShell menu. Requirements:
+
+- Python 3.10+
+- Windows host (the code calls `reg.exe`, `powershell`, and `winreg`)
+
+To launch the Python menu from the repo root:
+
+```bash
+python -m turbotweak
+```
+
+You will see the same numbered options as the PowerShell version. Each choice backs up the relevant registry keys (OneDrive → Documents fallback) and writes progress to `TurboTweak.log` in the repository root.
+
+You can also run tweaks directly without the menu. List available actions:
+
+```bash
+python -m turbotweak --list
+```
+
+Run a specific action (with a confirmation prompt):
+
+```bash
+python -m turbotweak add-take-ownership
+```
+
+Skip confirmations for scripting:
+
+```bash
+python -m turbotweak apply-all --assume-yes
+```
 
 ### Individual Scripts
 Run directly (e.g., as admin):
